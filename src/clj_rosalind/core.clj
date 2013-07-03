@@ -59,3 +59,23 @@
   http://rosalind.info/problems/gc/"
   [s]
   (apply max-key val (fasta-gc-content s)))
+
+(defn kmers
+  "Return all the kmers of sequence in order"
+  [sequence, k]
+  (map #(subs sequence % (+ k %)) (range (- (count sequence) k))))
+
+(defn find-element
+  "Finds indexes of element e in vector v"
+  [v, e]
+  (map inc
+  (map first
+       (filter #(= (second %) e)
+               (map-indexed vector v)))))
+
+(defn find-subsequence
+  "Return the start positions of sub in sequence.
+
+  http://rosalind.info/problems/subs/"
+  [sequence, sub]
+  (find-element (kmers sequence (count sub)) sub))
