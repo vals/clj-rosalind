@@ -63,15 +63,15 @@
 (defn kmers
   "Return all the kmers of sequence in order"
   [sequence, k]
-  (map #(subs sequence % (+ k %)) (range (- (count sequence) k))))
+  (map #(subs sequence % (+ k %)) (range (inc (- (count sequence) k)))))
 
 (defn find-element
   "Finds indexes of element e in vector v"
   [v, e]
   (map inc
-  (map first
-       (filter #(= (second %) e)
-               (map-indexed vector v)))))
+       (map first
+            (filter #(= (second %) e)
+                    (map-indexed vector v)))))
 
 (defn find-subsequence
   "Return the start positions of sub in sequence.
@@ -79,3 +79,33 @@
   http://rosalind.info/problems/subs/"
   [sequence, sub]
   (find-element (kmers sequence (count sub)) sub))
+
+(defn reverse-palindrome?
+  "Check if a sequence is a reverse palindrome"
+  [s]
+  (= (reverse-complement s) s))
+
+(defn find-reverse-palindrome-kmers
+  [sequence, k]
+  (map inc
+       (map first
+            (filter #(reverse-palindrome? (second %))
+                    (map-indexed vector (kmers sequence k))))))
+
+(defn find-reverse-palindromes
+  "Find the reverse palindromes in the sequence"
+  [sequence]
+  (filter #(> (count (first %)) 0)
+          (map #(vector (find-reverse-palindrome-kmers sequence %) %)
+               (range 4 13))))
+
+(defn fmt-rvp
+  [pos, size]
+  (map #(format "%d %d" % size) pos))
+
+(defn fmt-rvps
+  [sequence]
+  (print
+    (string/join "\n"
+      (flatten (map #(fmt-rvp (vec (first %)) (second %))
+               (find-reverse-palindromes sequence))))))
