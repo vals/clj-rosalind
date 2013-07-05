@@ -1,5 +1,6 @@
 (ns clj-rosalind.core
-    (:require [clojure.string :as string]))
+    (:require [clojure.string :as string]
+              incanter.stats))
 
 (defn count-bases
   "Count the bases in a DNA string. Prints the counts in alphabetical order.
@@ -109,3 +110,7 @@
     (string/join "\n"
       (flatten (map #(fmt-rvp (vec (first %)) (second %))
                (find-reverse-palindromes sequence))))))
+
+(defn hamming
+  [s, t]
+  (incanter.stats/hamming-distance s t))
