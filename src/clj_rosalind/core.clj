@@ -1,6 +1,7 @@
 (ns clj-rosalind.core
     (:require [clojure.string :as string]
-              incanter.stats))
+              incanter.stats
+              clojure.set))
 
 (defn count-bases
   "Count the bases in a DNA string. Prints the counts in alphabetical order.
@@ -28,18 +29,20 @@
   [s]
   (string/reverse (complement-dna s)))
 
-(defn fasta-to-map
-  "Takes a string in FASTA format and converts it to a map of label keys
-  and sequence values."
-  [s]
-  (into {} (remove #(< (count %) 2)
-                   (map #(string/split %  #"\n" 2)
-                        (string/split s #">")))))
-
 (defn clean-sequence
   "Return a DNA string where anything not a base have been removed."
   [s]
   (apply str (filter #(#{\A,\C,\G,\T} %) s)))
+
+(defn fasta-to-map
+  "Takes a string in FASTA format and converts it to a map of label keys
+  and sequence values."
+  [s]
+  (into {} 
+    (map #(vector (first %) (clean-sequence (second %)))
+         (remove #(< (count %) 2)
+                   (map #(string/split %  #"\n" 2)
+                        (string/split s #">"))))))
 
 (defn gc-content
   "Retrun the GC content of a DNA string."
@@ -114,3 +117,30 @@
 (defn hamming
   [s, t]
   (incanter.stats/hamming-distance s t))
+
+(defn common-kmers
+  "Finds all common kmers between fasta records."
+  [fasta, k]
+  (apply clojure.set/intersection 
+         (map #(set (kmers % k))
+              (vals (fasta-to-map fasta)))))
+
+(defn min-fasta-record-length
+  "Gets the length of the shortest record in a FASTA string"
+  [fasta]
+  (apply min (map #(count %) (vals (fasta-to-map fasta)))))
+
+(defn all-common-substrings
+  "Finds all the common substrings between fasta records"
+  [fasta]
+  (pmap #(common-kmers fasta %)
+       (reverse (range (min-fasta-record-length fasta)))))
+
+(defn longest-common-substring
+  "Finds a longest common substring between fasta records
+  http://rosalind.info/problems/lcsm/
+  Takes about 1 minute (on my Air)"
+  [fasta]
+  (first (first (filter #(> (count %) 0) (all-common-substrings fasta)))))
+
+(def fasta (slurp "/Users/valentinesvensson/Downloads/rosalind_lcsm.txt"))
