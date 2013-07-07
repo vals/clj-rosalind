@@ -208,3 +208,21 @@
   (apply splice (#(vector (first (vals (fasta-to-map (first %)))) 
                           (vals (fasta-to-map (second %))))
                   (split-fasta fasta))))
+
+(defn point-mutations
+  "Get the point mutations between s1 and s2"
+  [s1, s2]
+  (filter #(not= (first %) (second %)) (map vector s1 s2)))
+
+(def transitions #{[\A \G], [\C \T], [\G \A], [\T \C]})
+
+(def transversions #{[\A \C], [\A \T] [\C \A], [\C \G], [\G \C], [\G \T], [\T \A], [\T \G]})
+
+(defn transition-transversion-ratio
+  [point-mutations]
+  (float (/ (count (filter #(contains? transitions %) point-mutations))
+     (count (filter #(contains? transversions %) point-mutations)))))
+
+(defn fasta-transition-transversion-ratio
+  [fasta]
+  (transition-transversion-ratio (apply point-mutations (vals (fasta-to-map fasta)))))
